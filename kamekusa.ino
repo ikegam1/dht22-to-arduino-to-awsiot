@@ -178,7 +178,6 @@ void sendmessage (double humidity, double tempC) {
   
     //send a message
     MQTT::Message message;
-    //strcpy(buf, "{\"state\":{\"reported\":{\"on\": false}, \"desired\":{\"on\": false}}}");
     message.qos = MQTT::QOS0;
     message.retained = false;
     message.dup = false;
