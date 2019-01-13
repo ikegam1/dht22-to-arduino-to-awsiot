@@ -99,59 +99,13 @@ void setup() {
     }
     Serial.println ("\nconnected");
 
-
-    int timeSinceLastRead = 10;
-    float h;
-    float t;
-    float f;
-    while(timeSinceLastRead > 0) {
-      // Reading temperature or humidity takes about 250 milliseconds!
-      // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-      h = dht.readHumidity();
-      // Read temperature as Celsius (the default)
-      t = dht.readTemperature();
-      // Read temperature as Fahrenheit (isFahrenheit = true)
-      f = dht.readTemperature(true);
-      if(isnan(h) || isnan(t)) {
-        Serial.println("Failed to read from DHT sensor!");
-        timeSinceLastRead -= 1;
-        delay(500);
-      }else{
-        timeSinceLastRead = 0;
-      }
-    }
-
-    // Compute heat index in Fahrenheit (the default)
-    float hif = dht.computeHeatIndex(f, h);
-    // Compute heat index in Celsius (isFahreheit = false)
-    float hic = dht.computeHeatIndex(t, h, false);
-
-    Serial.print("Humidity: ");
-    Serial.print(h);
-    Serial.print(" %\t");
-    Serial.print("Temperature: ");
-    Serial.print(t);
-    Serial.print(" *C ");
-    Serial.print(f);
-    Serial.print(" *F\t");
-    Serial.print("Heat index: ");
-    Serial.print(hic);
-    Serial.print(" *C ");
-    Serial.print(hif);
-    Serial.println(" *F");
-
     //fill AWS parameters    
     awsWSclient.setAWSRegion(aws_region);
     awsWSclient.setAWSDomain(aws_endpoint);
     awsWSclient.setAWSKeyID(aws_key);
     awsWSclient.setAWSSecretKey(aws_secret);
     awsWSclient.setUseSSL(true);
-
-    send_am(h, t, f, hic, hif);
-    delay (100);
-    sendmessage (h,t);
-    Serial.println("Reported!: ");
-  
+    
     if (connect ()){
       subscribe ();
     }
@@ -285,8 +239,56 @@ void servo_move(int p){
   delay(1000);
 }
 
+void report(){
+    int timeSinceLastRead = 10;
+    float h;
+    float t;
+    float f;
+    while(timeSinceLastRead > 0) {
+      // Reading temperature or humidity takes about 250 milliseconds!
+      // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+      h = dht.readHumidity();
+      // Read temperature as Celsius (the default)
+      t = dht.readTemperature();
+      // Read temperature as Fahrenheit (isFahrenheit = true)
+      f = dht.readTemperature(true);
+      if(isnan(h) || isnan(t)) {
+        Serial.println("Failed to read from DHT sensor!");
+        timeSinceLastRead -= 1;
+        delay(500);
+      }else{
+        timeSinceLastRead = 0;
+      }
+    }
+
+    // Compute heat index in Fahrenheit (the default)
+    float hif = dht.computeHeatIndex(f, h);
+    // Compute heat index in Celsius (isFahreheit = false)
+    float hic = dht.computeHeatIndex(t, h, false);
+
+    Serial.print("Humidity: ");
+    Serial.print(h);
+    Serial.print(" %\t");
+    Serial.print("Temperature: ");
+    Serial.print(t);
+    Serial.print(" *C ");
+    Serial.print(f);
+    Serial.print(" *F\t");
+    Serial.print("Heat index: ");
+    Serial.print(hic);
+    Serial.print(" *C ");
+    Serial.print(hif);
+    Serial.println(" *F");
+
+    send_am(h, t, f, hic, hif);
+    delay (100);
+    sendmessage (h,t);
+    Serial.println("Reported!: ");
+}
+
 void loop() {
   int sleepTime = 1000 * 60 * 5; //5 minutes
+  report();
 
   while(sleepTime > 0) {  
     sleepTime -= 1000 * 15;
